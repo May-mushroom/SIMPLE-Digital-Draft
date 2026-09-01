@@ -54,7 +54,11 @@ function Button({
     />
   );
 }
-function ButtonGhost({ name }) {
-  return <Button variant="ghost">{name}</Button>;
+function ButtonGhost({ name, onClick }) {
+  return (
+    <Button variant="ghost" onClick={onClick}>
+      {name}
+    </Button>
+  );
 }
 export { Button, buttonVariants, ButtonGhost };

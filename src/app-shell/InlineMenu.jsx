@@ -1,7 +1,53 @@
 import React from "react";
-
 import { useEditorState } from "@tiptap/react";
 import { BubbleMenu } from "@tiptap/react/menus";
+import {
+  Bold,
+  Italic,
+  Code,
+  Heading1,
+  Heading2,
+  Heading3,
+  List,
+  ListOrdered,
+  Code2,
+  Minus,
+  ListChecks,
+} from "lucide-react";
+
+function ToolbarButton({
+  children,
+  onClick,
+  active = false,
+  disabled = false,
+  title,
+}) {
+  return (
+    <button
+      type="button"
+      title={title}
+      onClick={onClick}
+      disabled={disabled}
+      className={`
+        flex h-7 w-7 items-center justify-center
+        rounded-md
+        text-muted-foreground
+        transition-colors
+        hover:bg-muted
+        hover:text-foreground
+        disabled:cursor-not-allowed
+        disabled:opacity-40
+        ${active ? "bg-muted text-foreground" : ""}
+      `}
+    >
+      {children}
+    </button>
+  );
+}
+
+function Separator() {
+  return <div className="mx-1 h-4 w-px bg-border" />;
+}
 
 export default function InlineMenu({ editor }) {
   const editorState = useEditorState({
@@ -15,81 +61,118 @@ export default function InlineMenu({ editor }) {
 
   return (
     <BubbleMenu editor={editor}>
-      <div className="button-group">
-        <button
-          onClick={() => editor.chain().focus().toggleBold().run()}
+      <div
+        className="
+          flex items-center gap-0.5
+          rounded-md
+          border
+          bg-popover
+          p-1
+          text-popover-foreground
+          shadow-lg
+        "
+      >
+        <ToolbarButton
+          title="Bold"
+          active={editorState.isBold}
           disabled={!editorState.canBold}
-          className={editorState.isBold ? "is-active" : ""}
+          onClick={() => editor.chain().focus().toggleBold().run()}
         >
-          Bold
-        </button>
-        <button
-          onClick={() => editor.chain().focus().toggleItalic().run()}
+          <Bold className="h-4 w-4" />
+        </ToolbarButton>
+
+        <ToolbarButton
+          title="Italic"
+          active={editorState.isItalic}
           disabled={!editorState.canItalic}
-          className={editorState.isItalic ? "is-active" : ""}
+          onClick={() => editor.chain().focus().toggleItalic().run()}
         >
-          Italic
-        </button>
-        <button
-          onClick={() => editor.chain().focus().toggleCode().run()}
+          <Italic className="h-4 w-4" />
+        </ToolbarButton>
+
+        <ToolbarButton
+          title="Code"
+          active={editorState.isCode}
           disabled={!editorState.canCode}
-          className={editorState.isCode ? "is-active" : ""}
+          onClick={() => editor.chain().focus().toggleCode().run()}
         >
-          Code
-        </button>
-        <button
+          <Code className="h-4 w-4" />
+        </ToolbarButton>
+
+        <Separator />
+
+        <ToolbarButton
+          title="Heading 1"
+          active={editorState.isHeading1}
           onClick={() =>
             editor.chain().focus().toggleHeading({ level: 1 }).run()
           }
-          className={editorState.isHeading1 ? "is-active" : ""}
         >
-          H1
-        </button>
-        <button
+          <Heading1 className="h-4 w-4" />
+        </ToolbarButton>
+
+        <ToolbarButton
+          title="Heading 2"
+          active={editorState.isHeading2}
           onClick={() =>
             editor.chain().focus().toggleHeading({ level: 2 }).run()
           }
-          className={editorState.isHeading2 ? "is-active" : ""}
         >
-          H2
-        </button>
-        <button
+          <Heading2 className="h-4 w-4" />
+        </ToolbarButton>
+
+        <ToolbarButton
+          title="Heading 3"
+          active={editorState.isHeading3}
           onClick={() =>
             editor.chain().focus().toggleHeading({ level: 3 }).run()
           }
-          className={editorState.isHeading3 ? "is-active" : ""}
         >
-          H3
-        </button>
-        <button
+          <Heading3 className="h-4 w-4" />
+        </ToolbarButton>
+
+        <Separator />
+
+        <ToolbarButton
+          title="Bullet list"
+          active={editorState.isBulletList}
           onClick={() => editor.chain().focus().toggleBulletList().run()}
-          className={editorState.isBulletList ? "is-active" : ""}
         >
-          Bullet list
-        </button>
-        <button
+          <List className="h-4 w-4" />
+        </ToolbarButton>
+
+        <ToolbarButton
+          title="Ordered list"
+          active={editorState.isOrderedList}
           onClick={() => editor.chain().focus().toggleOrderedList().run()}
-          className={editorState.isOrderedList ? "is-active" : ""}
         >
-          Ordered list
-        </button>
-        <button
+          <ListOrdered className="h-4 w-4" />
+        </ToolbarButton>
+
+        <ToolbarButton
+          title="Task list"
+          active={editorState.isTaskList}
+          onClick={() => editor.chain().focus().toggleTaskList().run()}
+        >
+          <ListChecks className="h-4 w-4" />
+        </ToolbarButton>
+
+        <Separator />
+
+        <ToolbarButton
+          title="Code block"
+          active={editorState.isCodeBlock}
           onClick={() => editor.chain().focus().toggleCodeBlock().run()}
-          className={editorState.isCodeBlock ? "is-active" : ""}
         >
-          Code block
-        </button>
-        <button
+          <Code2 className="h-4 w-4" />
+        </ToolbarButton>
+
+        <ToolbarButton
+          title="Horizontal rule"
           onClick={() => editor.chain().focus().setHorizontalRule().run()}
         >
-          Horizontal rule
-        </button>
-        <button
-          onClick={() => editor.chain().focus().toggleTaskList().run()}
-          className={editorState.isTaskList ? "is-active" : ""}
-        >
-          Toggle task list
-        </button>
+          <Minus className="h-4 w-4" />
+        </ToolbarButton>
       </div>
     </BubbleMenu>
   );
