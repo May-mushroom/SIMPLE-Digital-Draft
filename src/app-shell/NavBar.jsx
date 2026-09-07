@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import SettingBar from "./SettingBar";
+import FileList from "./FileList";
 import {
   EllipsisVertical,
   PanelLeft,
@@ -11,31 +12,41 @@ import {
 // replace button name with icon later
 function NavBar() {
   const [settingOpen, setSettingOpen] = useState(false);
+  const [fileBarOpen, setFileBarOpen] = useState(false);
   const handleSettingClick = () => {
     setSettingOpen((settingOpen) => !settingOpen);
   };
-
+  const handleFileBarOpen = () => {
+    setFileBarOpen((fileBarOpen) => !fileBarOpen);
+  };
   return (
     <div className="relative">
-      <NavBarTool handleSettingClick={handleSettingClick} />
+      <NavBarTool
+        handleSettingClick={handleSettingClick}
+        handleFileBarOpen={handleFileBarOpen}
+      />
       {settingOpen && <SettingBar />}
+      <FileList open={fileBarOpen} />
     </div>
   );
 }
 
-function NavBarTool({ handleSettingClick }) {
+function NavBarTool({ handleSettingClick, handleFileBarOpen }) {
   return (
-    <nav className="sticky top-0 z-50 h-10 border-b border-neutral-200 bg-white">
+    <nav className="sticky top-0 z-50 h-10 shrink-0 border-b border-neutral-200 bg-white">
       <div className="flex h-full items-center justify-between px-5">
         {/* Left */}
         <div className="flex items-center gap-3">
-          <button className="p-1">
+          <button
+            className="p-1 transition-colors hover:bg-neutral-300 rounded-md "
+            onClick={handleFileBarOpen}
+          >
             <PanelLeft size={20} />
           </button>
-          <button className="p-1">
+          <button className="p-1 transition-colors hover:bg-neutral-300 rounded-md">
             <Plus size={20} />
           </button>
-          <button className="p-1">
+          <button className="p-1 transition-colors hover:bg-neutral-300 rounded-md">
             <FolderOpen size={20} />
           </button>
         </div>
@@ -52,7 +63,7 @@ function NavBarTool({ handleSettingClick }) {
         <div className="flex items-center gap-3">
           <button
             onClick={handleSettingClick}
-            className="rounded-xl p-3 hover:bg-neutral-100"
+            className="p-1 transition-colors hover:bg-neutral-300 rounded-md"
           >
             <EllipsisVertical size={20} />
           </button>

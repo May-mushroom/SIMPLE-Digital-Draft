@@ -1,5 +1,5 @@
 import React from "react";
-import { useEditorState } from "@tiptap/react";
+import { useCurrentEditor, useEditorState } from "@tiptap/react";
 import { BubbleMenu } from "@tiptap/react/menus";
 import {
   Bold,
@@ -49,15 +49,14 @@ function Separator() {
   return <div className="mx-1 h-4 w-px bg-border" />;
 }
 
-export default function InlineMenu({ editor }) {
+export default function InlineMenu() {
+  const { editor } = useCurrentEditor();
   const editorState = useEditorState({
     editor,
     selector: menuBarStateSelector,
   });
 
-  if (!editor) {
-    return null;
-  }
+  if (!editor || !editorState) return null;
 
   return (
     <BubbleMenu editor={editor}>
@@ -183,6 +182,7 @@ export default function InlineMenu({ editor }) {
  * Extracts the relevant editor state for rendering menu buttons.
  */
 function menuBarStateSelector(ctx) {
+  if (!ctx.editor) return null;
   return {
     // Text formatting
     isBold: ctx.editor.isActive("bold") ?? false,

@@ -1,30 +1,11 @@
 // src/Tiptap.tsx
 import React from "react";
-
-import { Placeholder } from "@tiptap/extensions";
-import Typography from "@tiptap/extension-typography";
-import { TaskItem, TaskList } from "@tiptap/extension-list";
-import { useEditor, EditorContent } from "@tiptap/react";
-import StarterKit from "@tiptap/starter-kit";
+import { EditorContent, useCurrentEditor } from "@tiptap/react";
 
 import InlineMenu from "./InlineMenu";
 
 const Tiptap = () => {
-  const editor = useEditor({
-    extensions: [
-      StarterKit,
-      Placeholder.configure({
-        placeholder: "start here baby !!",
-      }),
-      Typography,
-      TaskList,
-      TaskItem.configure({
-        nested: true,
-      }),
-    ], // define your extension array
-    content: "<p>hello</p>", // initial content
-    autofocus: "end",
-  });
+  const { editor } = useCurrentEditor();
 
   return (
     <main className="min-h-[calc(100vh-3.5rem)] pt-6">
@@ -34,7 +15,7 @@ const Tiptap = () => {
           className="min-h-[calc(100vh-5rem)] px-8 py-3 text-lg leading-8 outline-none"
         />
 
-        <InlineMenu editor={editor} />
+        <InlineMenu />
       </div>
     </main>
   );
