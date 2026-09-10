@@ -7,13 +7,9 @@ import Typography from "@tiptap/extension-typography";
 import { TaskItem, TaskList } from "@tiptap/extension-list";
 
 import NavBar from "./app-shell/NavBar.jsx";
-import FileList from "./app-shell/FileList.jsx";
 import Tiptap from "./app-shell/Tiptap.jsx";
 
-import {
-  debouncedAutoSave,
-  getInitialFileObject,
-} from "./storage/indexedDB.js";
+import { debouncedAutoSave, getCurrentFileObj } from "./storage/indexedDB.js";
 
 export default function App() {
   const [currentFile, setCurrentFile] = useState({ HTMLContent: "" });
@@ -41,7 +37,7 @@ export default function App() {
     },
   });
   useEffect(() => {
-    getInitialFileObject().then((currentFile) => {
+    getCurrentFileObj().then((currentFile) => {
       setCurrentFile(currentFile);
     });
   }, []);
@@ -50,7 +46,6 @@ export default function App() {
       editor.commands.setContent(currentFile.HTMLContent);
     }
   }, [editor, currentFile]);
-
   // Memoize the provider value to avoid unnecessary re-renders
   const providerValue = useMemo(() => ({ editor }), [editor]);
 
@@ -58,7 +53,7 @@ export default function App() {
     <EditorContext.Provider value={providerValue}>
       <div className="flex min-h-screen overflow-hidden bg-white text-neutral-900">
         <div className="flex min-w-0 flex-1 flex-col">
-          <NavBar />
+          <NavBar currentFile={currentFile} setCurrentFile={setCurrentFile} />
           <main className="max-h-[calc(100vh-40px)] flex-1 overflow-y-auto">
             <Tiptap />
           </main>

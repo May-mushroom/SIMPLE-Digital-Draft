@@ -12,27 +12,26 @@ import {
   MouseLeft,
   RemoveFormatting,
 } from "lucide-react";
-
+const BTN_NAMES = {
+  FILE: [
+    { name: "Save", icon: <Save size={16} /> },
+    { name: "Save As", icon: <Save size={16} /> },
+    { name: "Rename", icon: <PencilLine size={16} /> },
+    { name: "Delete", icon: <Trash2 size={16} /> },
+    { name: "Download", icon: <Download size={16} /> },
+    { name: "Pin", icon: <Star size={16} /> },
+    { name: "Convert To JSON", icon: <Braces size={16} /> },
+    { name: "Move To Google Docs", icon: <FileInput size={16} /> },
+  ],
+  APP: [{ name: "Clear All Local Data", icon: <MopSparkles size={16} /> }],
+  VIEW: [
+    { name: "Statistics", icon: <ALargeSmall size={16} /> },
+    { name: "Scrollbar", icon: <MouseLeft size={16} /> },
+    { name: "Auto Save", icon: <Save size={16} /> },
+    { name: "Auto Inline Tool Bar", icon: <RemoveFormatting size={16} /> },
+  ],
+};
 export default function SettingBar() {
-  const BTN_NAMES = {
-    FILE: [
-      { name: "Save", icon: <Save size={16} /> },
-      { name: "Save As", icon: <Save size={16} /> },
-      { name: "Rename", icon: <PencilLine size={16} /> },
-      { name: "Delete", icon: <Trash2 size={16} /> },
-      { name: "Download", icon: <Download size={16} /> },
-      { name: "Pin", icon: <Star size={16} /> },
-      { name: "Convert To JSON", icon: <Braces size={16} /> },
-      { name: "Move To Google Docs", icon: <FileInput size={16} /> },
-    ],
-    APP: [{ name: "Clear All Local Data", icon: <MopSparkles size={16} /> }],
-    VIEW: [
-      { name: "Statistics", icon: <ALargeSmall size={16} /> },
-      { name: "Scrollbar", icon: <MouseLeft size={16} /> },
-      { name: "Auto Save", icon: <Save size={16} /> },
-      { name: "Auto Inline Tool Bar", icon: <RemoveFormatting size={16} /> },
-    ],
-  };
   const fileBtns = BTN_NAMES.FILE.map(({ name, icon }) => (
     <MenuItem icon={icon}>{name}</MenuItem>
   ));
