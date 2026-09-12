@@ -52,13 +52,16 @@ function FileList({
    * 3. load the currentFile state to current obj store
    */
   const handleSelectFile = async (fileObj) => {
-    await saveFileToDBStore(
-      {
-        ...currentFile,
-        HTMLContent: editor.getHTML(),
-      },
-      "files",
-    );
+    // only save to "files" obj store if the current content is not ""
+    if (editor.getText()) {
+      await saveFileToDBStore(
+        {
+          ...currentFile,
+          HTMLContent: editor.getHTML(),
+        },
+        "files",
+      );
+    }
     setCurrentFile(fileObj);
     await clearObjStore("current");
     await saveFileToDBStore(fileObj, "current");

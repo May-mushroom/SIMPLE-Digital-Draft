@@ -23,6 +23,14 @@ export function initDB() {
     request.onerror = () => reject(request.error);
   });
 }
+export function resetFileObjToDefault(fileId) {
+  return {
+    fileId: fileId,
+    fileTitle: new Date().toJSON().slice(0, 10),
+    pinned: false,
+    HTMLContent: "",
+  };
+}
 export function createNewFileObj() {
   return {
     fileId: nanoid(),
@@ -158,6 +166,7 @@ export function saveFileToDBStore(fileObj, storeName) {
     const request = objStore.put(fileObj);
     request.onsuccess = () => {
       console.log(`successfully added file object to ${storeName} store`);
+      console.trace();
       resolve();
     };
     request.onerror = (err) => {

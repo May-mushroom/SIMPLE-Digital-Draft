@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { createContext, useContext, useState } from "react";
 import { useCurrentEditor } from "@tiptap/react";
 
 import {
@@ -20,13 +20,16 @@ import {
   clearObjStore,
   updateObj,
 } from "../storage/indexedDB.js";
+import { AppContext } from "@/App";
 
-function NavBar({ currentFile, setCurrentFile }) {
+const NavBarContext = createContext();
+function NavBar() {
   const [allFiles, setAllFiles] = useState([]);
   const [settingOpen, setSettingOpen] = useState(false);
   const [popupFileWindowOpen, setPopupFileWindow] = useState(false);
   const [fileBarOpen, setFileBarOpen] = useState(false);
   const { editor } = useCurrentEditor();
+  const { currentFile, setCurrentFile } = useContext(AppContext);
 
   const handleOpenSetting = () => {
     setSettingOpen((settingOpen) => !settingOpen);
@@ -67,15 +70,19 @@ function NavBar({ currentFile, setCurrentFile }) {
     await updateObj("current", updatedObj);
   };
   return (
-    <div className="relative">
-      <NavBarTool
-        isPinnedCurrent={currentFile.pinned}
-        handleOpenSetting={handleOpenSetting}
-        handleOpenFileBar={handleOpenFileBar}
-        handleCreateNewFile={handleCreateNewFile}
-        handleOpenNewFile={handleOpenNewFile}
-        handlePinFile={handlePinFile}
-      />
+    <div className="fixed top-0 left-0 right-0 z-2">
+      <NavBarContext
+        value={{
+          fileTitle: currentFile.fileTitle,
+          handleOpenSetting: handleOpenSetting,
+          handleOpenFileBar: handleOpenFileBar,
+          handleCreateNewFile: handleCreateNewFile,
+          handleOpenNewFile: handleOpenNewFile,
+          handlePinFile: handlePinFile,
+        }}
+      >
+        <NavBarTool />
+      </NavBarContext>
       {settingOpen && <SettingBar />}
       {popupFileWindowOpen && (
         <PopupFileWindow setPopupFileWindow={setPopupFileWindow} />
@@ -92,14 +99,16 @@ function NavBar({ currentFile, setCurrentFile }) {
   );
 }
 
-function NavBarTool({
-  isPinnedCurrent,
-  handleOpenSetting,
-  handleOpenFileBar,
-  handleCreateNewFile,
-  handleOpenNewFile,
-  handlePinFile,
-}) {
+function NavBarTool() {
+  const {
+    fileTitle,
+    isPinnedCurrent,
+    handleOpenSetting,
+    handleOpenFileBar,
+    handleCreateNewFile,
+    handleOpenNewFile,
+    handlePinFile,
+  } = useContext(NavBarContext);
   return (
     <nav className="sticky top-0 z-10 h-10 shrink-0 border-b border-neutral-200 bg-white">
       <div className="flex h-full items-center justify-between px-5">
@@ -130,7 +139,7 @@ function NavBarTool({
           <span className="text-neutral-500">
             <Info size={20} />
           </span>
-          <span className="text-sm">Title</span>
+          <span className="text-sm">{fileTitle}</span>
         </div>
 
         {/* Right */}

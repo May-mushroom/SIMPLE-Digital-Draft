@@ -38,7 +38,7 @@ export default function PopupFileWindow({ setPopupFileWindow }) {
     NAV_ITEMS.find((item) => item.id === activeNav)?.label ?? "";
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
+    <div className="fixed inset-0 z-2 flex items-center justify-center bg-black/40 p-4">
       <div className="flex h-[80vh] w-[70vw] flex-col overflow-hidden rounded-2xl bg-white shadow-2xl">
         {/* Header */}
         <div className="flex items-center justify-between border-b border-gray-100 px-8 py-6">
