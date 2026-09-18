@@ -10,11 +10,17 @@ import { Markdown } from "@tiptap/markdown";
 import NavBar from "./app-shell/NavBar.jsx";
 import Tiptap from "./app-shell/Tiptap.jsx";
 
-import { debouncedAutoSave, getCurrentFileObj } from "./storage/indexedDB.js";
+import {
+  debouncedAutoSave,
+  getCurrentFileObj,
+  updateObj,
+} from "./storage/indexedDB.js";
 
 export const AppContext = createContext();
 export default function App() {
-  const [currentFile, setCurrentFile] = useState({ HTMLContent: "" });
+  // const [currentFile, setCurrentFile] = useState({});
+  const [fileMeta, setFileMeta] = useState({});
+  const [fileContent, setFileContent] = useState("");
   const [inlineMenuOn, setInlineMenuOn] = useState(true);
   const [autoSaveOn, setAutoSaveOn] = useState(true);
 
@@ -31,24 +37,47 @@ export default function App() {
       }),
       Markdown,
     ],
-    content: currentFile?.HTMLContent ?? "", // initial content
+    content: "", // initial content
     editable: true,
     autofocus: "end",
     immediatelyRender: false,
-    onUpdate: ({ editor }) => {
-      if (!autoSaveOn) return;
+    onCreate: () => {
+      getCurrentFileObj().then((currentFile) => {
+        // setCurrentFile(currentFile);
+        const { HTMLContent, ...rest } = currentFile;
+        setFileMeta(rest);
+        setFileContent(HTMLContent);
+        editor.commands.setContent(currentFile.HTMLContent);
+      });
+    },
+    onUpdate: ({ editor, transaction }) => {
+      if (!autoSaveOn || !transaction.docChanged) {
+        console.log(`doc changed: ${transaction.docChanged}`);
+        console.log(`autosave is on: ${autoSaveOn}`);
+        return;
+      }
       debouncedAutoSave({
-        ...currentFile,
+        ...fileMeta,
         HTMLContent: editor.getHTML(),
       });
     },
   });
+  // useEffect(() => {
+  //   if (!editor) return;
+  //   // pretty much whenever currentFile change, its the data fetch from "current" or "files"
+  //   // so currentHTMLContent is up-to-date, so not update with editor.content
+  //   updateObj("current", currentFile);
+  //   editor.commands.setContent(currentFile.HTMLContent);
+  // }, [currentFile]);
   useEffect(() => {
-    getCurrentFileObj().then((currentFile) => {
-      setCurrentFile(currentFile);
-      editor.commands.setContent(currentFile.HTMLContent);
-    });
-  }, [editor]);
+    if (!editor) return;
+    editor.commands.setContent(fileContent);
+  }, [fileContent]);
+  useEffect(() => {
+    if (!editor) return;
+    updateObj("current", { ...fileMeta, HTMLContent: editor.getHTML() });
+  }, [fileMeta]);
+
   /**
    * whats this useEffect for?
    */
@@ -64,11 +93,15 @@ export default function App() {
     <EditorContext.Provider value={providerValue}>
       <AppContext
         value={{
-          currentFile: currentFile,
+          fileMeta: fileMeta,
+          fileContent: fileContent,
+          // currentFile: currentFile,
           inlineMenuOn: inlineMenuOn,
           autoSaveOn: autoSaveOn,
 
-          setCurrentFile: setCurrentFile,
+          // setCurrentFile: setCurrentFile,
+          setFileMeta: setFileMeta,
+          setFileContent: setFileContent,
           setInlineMenuOn: setInlineMenuOn,
           setAutoSaveOn: setAutoSaveOn,
         }}

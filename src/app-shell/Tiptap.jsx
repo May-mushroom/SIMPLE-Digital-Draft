@@ -1,11 +1,13 @@
 // src/Tiptap.tsx
-import React from "react";
+import React, { useContext } from "react";
 import { EditorContent, useCurrentEditor } from "@tiptap/react";
 
 import InlineMenu from "./InlineMenu";
+import { AppContext } from "@/App";
 
-const Tiptap = ({ inlineMenuOn }) => {
+const Tiptap = () => {
   const { editor } = useCurrentEditor();
+  const { inlineMenuOn } = useContext(AppContext);
 
   return (
     <main className="min-h-[calc(100vh-3.5rem)] pt-20">

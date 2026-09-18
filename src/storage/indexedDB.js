@@ -39,6 +39,25 @@ export function createNewFileObj() {
     HTMLContent: "",
   };
 }
+/**
+ *
+ * @param {String} key
+ * @param {"current"|"files"} storeName
+ * @returns
+ */
+export function getFile(key, storeName) {
+  return new Promise((resolve, reject) => {
+    const store = db.transaction(storeName, "readonly").objectStore(storeName);
+    const request = store.get(key);
+    request.onsuccess = () => {
+      resolve(request.result);
+      console.log(`SUCCESS: got the file obj from "${storeName}"`);
+    };
+    request.onerror = (err) => {
+      reject(`ERROR: ${err}`);
+    };
+  });
+}
 export function getCurrentFileObj() {
   return new Promise((resolve, reject) => {
     const store = db.transaction("current", "readonly").objectStore("current");
@@ -65,7 +84,7 @@ export function getCurrentFileObj() {
  */
 export function getAllFiles(storeName) {
   return new Promise((resolve, reject) => {
-    const transaction = db.transaction(storeName, "readwrite");
+    const transaction = db.transaction(storeName, "readonly");
     const objStore = transaction.objectStore(storeName);
     const request = objStore.getAll();
     request.onsuccess = () => {
@@ -89,7 +108,7 @@ export function clearObjStore(storeName) {
     const objStore = transaction.objectStore(storeName);
     const clearRequest = objStore.clear();
     clearRequest.onsuccess = () => {
-      console.log("SUCCESS: successfully clear the obj store ");
+      console.log(`SUCCESS: successfully clear the ${storeName} store `);
       resolve();
     };
     clearRequest.onerror = (err) => {
@@ -124,13 +143,18 @@ export function updateObj(storeName, fileObj) {
     const transaction = db.transaction(storeName, "readwrite");
     const objStore = transaction.objectStore(storeName);
     const updateRequest = objStore.put(fileObj);
+
     updateRequest.onsuccess = () => {
-      console.log("SUCCESS: successfully update the current file ");
+      console.log("SUCCESS");
       resolve();
     };
-    updateRequest.onerror = (err) => {
-      console.log(`ERROR: ${err}`);
-      reject(err);
+    updateRequest.onerror = (event) => {
+      console.error("PUT ERROR:", event.target.error);
+      reject(event.target.error);
+    };
+
+    transaction.onerror = (event) => {
+      console.error("TRANSACTION ERROR:", event.target.error);
     };
   });
 }
@@ -152,6 +176,7 @@ function debounce(func, delay) {
   };
 }
 async function autoSave(currentFile) {
+  console.log(currentFile);
   await saveFileToDBStore(currentFile, "current");
 }
 /**
@@ -164,9 +189,14 @@ export function saveFileToDBStore(fileObj, storeName) {
     const transaction = db.transaction(storeName, "readwrite");
     const objStore = transaction.objectStore(storeName);
     const request = objStore.put(fileObj);
+    console.log(fileObj);
     request.onsuccess = () => {
       console.log(`successfully added file object to ${storeName} store`);
-      console.trace();
+      const getRequest = objStore.get(fileObj.fileId);
+
+      getRequest.onsuccess = () => {
+        console.log("Stored object:", getRequest.result);
+      };
       resolve();
     };
     request.onerror = (err) => {

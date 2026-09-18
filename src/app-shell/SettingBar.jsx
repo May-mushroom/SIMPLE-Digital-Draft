@@ -10,7 +10,7 @@ import {
   RemoveFormatting,
   FileText,
   SquarePen,
-  Square,
+  Moon,
 } from "lucide-react";
 import {
   clearObjStore,
@@ -21,25 +21,32 @@ import {
 import { useCurrentEditor } from "@tiptap/react";
 import { AppContext } from "@/App";
 
-export default function SettingBar() {
+export default function SettingBar({ setSettingOpen }) {
   const { editor } = useCurrentEditor();
   const [renameOpen, setRenameOpen] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [editableOn, setEditableOn] = useState(true);
+  const [darkMode, setDarkMode] = useState(false);
   const renameRef = useRef(null);
   const {
-    currenFile,
+    // currentFile,
+    fileMeta,
+    fileContent,
     inlineMenuOn,
     autoSaveOn,
 
-    setCurrentFile,
+    // setCurrentFile,
+    setFileMeta,
+    setFileContent,
     setAutoSaveOn,
     setInlineMenuOn,
   } = useContext(AppContext);
 
   const handleRename = () => {
-    setCurrentFile({ ...currenFile, fileTitle: renameRef.current.value });
+    // setCurrentFile({ ...currentFile, fileTitle: renameRef.current.value });
+    setFileMeta({ ...fileMeta, fileTitle: renameRef.current.value });
     setRenameOpen(false);
+    setSettingOpen(false);
   };
   /**
    * 1. delete the file obj in "files" obj store (if exist)
@@ -54,11 +61,19 @@ export default function SettingBar() {
       setDeleteOpen(false);
       return;
     }
-    const defaultFile = resetFileObjToDefault(currenFile.fileId);
-    await deleteObj(currenFile.fileId, "files");
-    setCurrentFile(defaultFile);
-    await updateObj("current", defaultFile);
-    editor.commands.setContent("");
+    // const defaultFile = resetFileObjToDefault(currentFile.fileId);
+    const defaultFile = resetFileObjToDefault(fileMeta.fileId);
+    const { HTMLContent, ...rest } = defaultFile;
+    // await deleteObj(currentFile.fileId, "files");
+    await deleteObj(fileMeta.fileId, "files");
+
+    // setCurrentFile(defaultFile);
+    setFileMeta(rest);
+    setFileContent(HTMLContent);
+    // await updateObj("current", defaultFile);
+    // editor.commands.setContent("");
+    setDeleteOpen(false);
+    setSettingOpen(false);
   };
   const handleDownload = (format) => {
     let content, extension;
@@ -84,7 +99,9 @@ export default function SettingBar() {
 
     const a = document.createElement("a");
     a.href = url;
-    a.download = `Digital-Draft-${currenFile.fileTitle}.${extension}`;
+    // a.download = `Digital-Draft-${currentFile.fileTitle}.${extension}`;
+    a.download = `Digital-Draft-${fileMeta.fileTitle}.${extension}`;
+
     a.click();
 
     URL.revokeObjectURL(url);
@@ -95,6 +112,7 @@ export default function SettingBar() {
    */
   const handleClearData = async () => {
     await clearObjStore("files");
+    setSettingOpen(false);
   };
   const handleToggleInlineMenu = () => {
     setInlineMenuOn((state) => !state);
@@ -105,6 +123,9 @@ export default function SettingBar() {
   const handleToggleEditable = (e) => {
     setEditableOn((state) => !state);
     editor.setEditable(e.target.checked);
+  };
+  const handleToggleDarkMode = (e) => {
+    setDarkMode((darkMode) => !darkMode);
   };
   return (
     <div className="absolute right-10 top-[52px] z-50 w-[250px] rounded-2xl border border-neutral-200 bg-white p-4 shadow-xl">
@@ -151,6 +172,7 @@ export default function SettingBar() {
           name="Clear All Local Data"
           icon={<MopSparkles size={16} />}
           onClick={handleClearData}
+          danger={true}
         />
       </Section>
       {/** View & Settings */}
@@ -172,6 +194,12 @@ export default function SettingBar() {
           icon={<SquarePen size={16} />}
           checked={editableOn}
           onClick={(e) => handleToggleEditable(e)}
+        />
+        <ToggleItem
+          name="Dark Mode"
+          icon={<Moon size={16} />}
+          checked={darkMode}
+          onClick={handleToggleDarkMode}
         />
       </Section>
       {renameOpen && (

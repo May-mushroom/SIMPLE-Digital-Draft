@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 
 import { ChevronLeft, ChevronRight, ChevronDown } from "lucide-react";
 import {
@@ -7,6 +7,7 @@ import {
   saveFileToDBStore,
 } from "@/storage/indexedDB";
 import { useCurrentEditor } from "@tiptap/react";
+import { AppContext } from "@/App";
 
 /**
  * FileList
@@ -25,10 +26,11 @@ function FileList({
   recentFiles = [],
   selectedId = null,
   open,
-  currentFile,
+  // currentFile,
   setOpen,
-  setCurrentFile,
+  // setCurrentFile,
 }) {
+  const { fileMeta, setFileMeta, setFileContent } = useContext(AppContext);
   const [activeSection, setActiveSection] = useState({
     recent: false,
     pin: false,
@@ -56,16 +58,21 @@ function FileList({
     if (editor.getText()) {
       await saveFileToDBStore(
         {
-          ...currentFile,
+          // ...currentFile,
+          ...fileMeta,
           HTMLContent: editor.getHTML(),
         },
         "files",
       );
     }
-    setCurrentFile(fileObj);
     await clearObjStore("current");
-    await saveFileToDBStore(fileObj, "current");
-    editor.commands.setContent(fileObj.HTMLContent);
+
+    const { HTMLContent, ...rest } = fileObj;
+    // setCurrentFile(fileObj);
+    setFileMeta(rest);
+    setFileContent(HTMLContent);
+    // await saveFileToDBStore(fileObj, "current");
+    // editor.commands.setContent(fileObj.HTMLContent);
     setOpen(false);
   };
 
@@ -107,7 +114,13 @@ function FileList({
 
       {/* Content */}
       <div className="flex-1 overflow-y-auto">
-        <Section title="Pinned" collapsible defaultOpen empty="No pinned files">
+        <Section
+          key="pinned-section"
+          title="Pinned"
+          collapsible
+          defaultOpen
+          empty="No pinned files"
+        >
           {pinnedFiles.map((file) => (
             <FileRow
               key={file.id}
@@ -119,6 +132,7 @@ function FileList({
         </Section>
 
         <Section
+          key="recent-section"
           title="Recent"
           collapsible
           defaultOpen={false}
@@ -135,6 +149,7 @@ function FileList({
         </Section>
 
         <Section
+          key="file-section"
           title="File"
           collapsible
           defaultOpen={false}

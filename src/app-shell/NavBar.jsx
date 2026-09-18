@@ -19,6 +19,7 @@ import {
   createNewFileObj,
   clearObjStore,
   updateObj,
+  getCurrentFileObj,
 } from "../storage/indexedDB.js";
 import { AppContext } from "@/App";
 
@@ -28,8 +29,13 @@ function NavBar() {
   const [settingOpen, setSettingOpen] = useState(false);
   const [popupFileWindowOpen, setPopupFileWindow] = useState(false);
   const [fileBarOpen, setFileBarOpen] = useState(false);
+  const [isPin, setIsPin] = useState(false);
+
   const { editor } = useCurrentEditor();
-  const { currentFile, setCurrentFile } = useContext(AppContext);
+  // const { currentFile, setCurrentFile, fileMeta, setFileMeta, setFileContent } =
+  //   useContext(AppContext);
+  const { fileContent, fileMeta, setFileMeta, setFileContent } =
+    useContext(AppContext);
 
   const handleOpenSetting = () => {
     setSettingOpen((settingOpen) => !settingOpen);
@@ -45,18 +51,24 @@ function NavBar() {
    * 4. update editor content
    */
   const handleCreateNewFile = async () => {
-    const newFile = createNewFileObj();
-    await saveFileToDBStore(
-      {
-        ...currentFile,
-        HTMLContent: editor.getHTML(),
-      },
-      "files",
-    );
-    setCurrentFile(newFile);
+    const { HTMLContent, ...rest } = createNewFileObj();
+    if (editor.getText()) {
+      await saveFileToDBStore(
+        // {
+        //   ...currentFile,
+        //   HTMLContent: editor.getHTML(),
+        // },
+        { ...fileMeta, HTMLContent: editor.getHTML() },
+        "files",
+      );
+    }
     await clearObjStore("current");
-    await saveFileToDBStore(newFile, "current");
+    // setCurrentFile(newFile);
+    setFileContent(HTMLContent);
+    setFileMeta(rest);
     editor.commands.clearContent(false);
+
+    // await saveFileToDBStore(newFile, "current");
   };
   const handleOpenNewFile = async () => {
     setPopupFileWindow(true);
@@ -65,15 +77,19 @@ function NavBar() {
    * handle pin and unpin
    */
   const handlePinFile = async () => {
-    const updatedObj = { ...currentFile, pinned: !currentFile.pinned };
-    setCurrentFile(updatedObj);
-    await updateObj("current", updatedObj);
+    // const updatedObj = { ...currentFile, pinned: !currentFile.pinned };
+    // setCurrentFile(updatedObj);
+    // await updateObj("current", updatedObj);
+    setFileMeta({ ...fileMeta, pinned: !fileMeta.pinned });
+    setIsPin((isPin) => !isPin);
   };
   return (
-    <div className="fixed top-0 left-0 right-0 z-2">
+    <div className="fixed top-0 left-0 right-0 z-10">
       <NavBarContext
         value={{
-          fileTitle: currentFile.fileTitle,
+          fileTitle: fileMeta.fileTitle,
+          isPin: isPin,
+
           handleOpenSetting: handleOpenSetting,
           handleOpenFileBar: handleOpenFileBar,
           handleCreateNewFile: handleCreateNewFile,
@@ -83,16 +99,17 @@ function NavBar() {
       >
         <NavBarTool />
       </NavBarContext>
-      {settingOpen && <SettingBar />}
+
+      {settingOpen && <SettingBar setSettingOpen={setSettingOpen} />}
       {popupFileWindowOpen && (
         <PopupFileWindow setPopupFileWindow={setPopupFileWindow} />
       )}
       {fileBarOpen && (
         <FileList
           open={fileBarOpen}
-          currentFile={currentFile}
+          // currentFile={currentFile}
           setOpen={setFileBarOpen}
-          setCurrentFile={setCurrentFile}
+          // setCurrentFile={setCurrentFile}
         />
       )}
     </div>
@@ -102,7 +119,8 @@ function NavBar() {
 function NavBarTool() {
   const {
     fileTitle,
-    isPinnedCurrent,
+    isPin,
+
     handleOpenSetting,
     handleOpenFileBar,
     handleCreateNewFile,
@@ -148,7 +166,7 @@ function NavBarTool() {
             onClick={handlePinFile}
             className="p-1 transition-colors hover:bg-neutral-300 rounded-md"
           >
-            <Star fill={isPinnedCurrent ? "currentColor" : "none"} />
+            <Star fill={isPin ? "currentColor" : "none"} />
           </button>
           <button
             onClick={handleOpenSetting}

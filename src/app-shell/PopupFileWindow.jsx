@@ -1,8 +1,16 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useContext } from "react";
 
 import { Clock, Star, FileText, X, Trash2 } from "lucide-react";
 
-import { deleteObj, getAllFiles } from "@/storage/indexedDB";
+import {
+  clearObjStore,
+  deleteObj,
+  getAllFiles,
+  getFile,
+  saveFileToDBStore,
+} from "@/storage/indexedDB";
+import { useCurrentEditor } from "@tiptap/react";
+import { AppContext } from "@/App";
 
 const NAV_ITEMS = [
   { id: "recent", label: "Recent", icon: Clock },
@@ -13,6 +21,8 @@ const NAV_ITEMS = [
 export default function PopupFileWindow({ setPopupFileWindow }) {
   const [activeNav, setActiveNav] = useState("local");
   const [files, setFiles] = useState([]);
+  const { editor } = useCurrentEditor();
+  const { currentFile, setCurrentFile } = useContext(AppContext);
 
   /**
    * popup window, when mounts, blocks actions in the writting area.
@@ -30,6 +40,22 @@ export default function PopupFileWindow({ setPopupFileWindow }) {
     setFiles((prev) => prev.filter((file) => file.fileId !== id));
     await deleteObj(id, "files");
   };
+  /**
+   * 1. save current file to "files" obj store
+   * 2. clear "current" obj store
+   * 3. move the chosen file from "files" to "current"
+   */
+  const handleFileClick = async (id) => {
+    await saveFileToDBStore(
+      { ...currentFile, HTMLContent: editor.getHTML() },
+      "files",
+    );
+    await clearObjStore("current");
+    const chosenFile = await getFile(id, "files");
+    console.log("chosen file", chosenFile);
+    setCurrentFile(chosenFile);
+    setPopupFileWindow(false);
+  };
 
   const handleOnClose = () => {
     setPopupFileWindow(false);
@@ -38,8 +64,8 @@ export default function PopupFileWindow({ setPopupFileWindow }) {
     NAV_ITEMS.find((item) => item.id === activeNav)?.label ?? "";
 
   return (
-    <div className="fixed inset-0 z-2 flex items-center justify-center bg-black/40 p-4">
-      <div className="flex h-[80vh] w-[70vw] flex-col overflow-hidden rounded-2xl bg-white shadow-2xl">
+    <div className="fixed inset-0 z-20 flex items-center justify-center bg-black/40 p-4">
+      <div className="flex h-[80vh] z-30 w-[70vw] flex-col overflow-hidden rounded-2xl bg-white shadow-2xl">
         {/* Header */}
         <div className="flex items-center justify-between border-b border-gray-100 px-8 py-6">
           <h2 className="text-2xl font-semibold text-gray-900">Open</h2>
@@ -90,6 +116,7 @@ export default function PopupFileWindow({ setPopupFileWindow }) {
                   <FileRow
                     key={file.fileId}
                     {...file}
+                    onClick={() => handleFileClick(file.fileId)}
                     onDelete={() => handleDelete(file.fileId)}
                   />
                 ))}
@@ -118,7 +145,13 @@ function NavItem({ label, icon: Icon, active, onClick }) {
   );
 }
 
-export function FileRow({ fileTitle, preview = "", active, onDelete }) {
+export function FileRow({
+  fileTitle,
+  preview = "",
+  active,
+  onDelete,
+  onClick,
+}) {
   return (
     <div
       className={`group flex w-full items-center gap-4 px-8 py-4 transition-colors hover:bg-gray-50 ${
@@ -128,6 +161,7 @@ export function FileRow({ fileTitle, preview = "", active, onDelete }) {
       <button
         type="button"
         className="flex flex-1 items-center gap-4 text-left"
+        onClick={onClick}
       >
         <FileText className="h-5 w-5 shrink-0 text-gray-400" />
         <span className="flex-1 truncate text-[15px] text-gray-900">
